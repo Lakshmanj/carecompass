@@ -1,0 +1,15 @@
+# Dependency directories (Ignores them in server AND client)
+node_modules/
+
+# Environment variables (CRITICAL: Do not share your DB passwords)
+.env
+.env.local
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
