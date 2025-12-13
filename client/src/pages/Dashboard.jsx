@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  // Initialize as empty array to prevent crashes
   const [resources, setResources] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
@@ -19,8 +20,23 @@ export default function Dashboard() {
   }, [navigate]);
 
   const fetchResources = async () => {
-    const res = await axios.get('http://localhost:5000/api/resources');
-    setResources(res.data);
+    try {
+      const res = await axios.get('http://localhost:5000/api/resources');
+      
+      // FIX: Handle the new response structure { message, data: [...] }
+      if (res.data && Array.isArray(res.data.data)) {
+        setResources(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        // Fallback for old structure
+        setResources(res.data);
+      } else {
+        console.error("Unexpected data format on Dashboard:", res.data);
+        setResources([]); 
+      }
+    } catch (err) {
+      console.error("Error fetching resources:", err);
+      setResources([]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -120,7 +136,11 @@ export default function Dashboard() {
 
       {/* List Section for Management */}
       <h3>Manage Existing Resources</h3>
-      {resources.map(r => (
+      
+      {/* Safety Check: Only map if resources is an array */}
+      {Array.isArray(resources) && resources.length === 0 && <p>No resources found.</p>}
+      
+      {Array.isArray(resources) && resources.map(r => (
         <div key={r._id} className="card" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
           <div>
             <strong>{r.title}</strong> <br/>
